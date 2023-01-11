@@ -1,9 +1,9 @@
 package com.codeashen.mvcframework.v1.servlet;
 
-import com.codeashen.mvcframework.annotation.Autowired;
-import com.codeashen.mvcframework.annotation.Controller;
-import com.codeashen.mvcframework.annotation.RequestMapping;
-import com.codeashen.mvcframework.annotation.Service;
+import com.codeashen.mvcframework.annotation.ASAutowired;
+import com.codeashen.mvcframework.annotation.ASController;
+import com.codeashen.mvcframework.annotation.ASRequestMapping;
+import com.codeashen.mvcframework.annotation.ASService;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -74,26 +74,26 @@ public class DispatcherServlet extends HttpServlet {
                     continue;
                 }
                 Class<?> clazz = Class.forName(clazzName);
-                if (clazz.isAnnotationPresent(Controller.class)) {
+                if (clazz.isAnnotationPresent(ASController.class)) {
                     mapping.put(clazzName, clazz.newInstance());
                     String baseUrl = "";
-                    if (clazz.isAnnotationPresent(RequestMapping.class)) {
-                        RequestMapping requestMapping = clazz.getAnnotation(RequestMapping.class);
+                    if (clazz.isAnnotationPresent(ASRequestMapping.class)) {
+                        ASRequestMapping requestMapping = clazz.getAnnotation(ASRequestMapping.class);
                         baseUrl = requestMapping.value();
                     }
 
                     Method[] methods = clazz.getMethods();
                     for (Method method : methods) {
-                        if (!method.isAnnotationPresent(RequestMapping.class)) {
+                        if (!method.isAnnotationPresent(ASRequestMapping.class)) {
                             continue;
                         }
-                        RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+                        ASRequestMapping requestMapping = method.getAnnotation(ASRequestMapping.class);
                         String url = baseUrl + "/" + requestMapping.value().replaceAll("/+", "/");
                         mapping.put(url, method);
                         System.out.println("Mapped " + url + ", " + method);
                     }
-                } else if (clazz.isAnnotationPresent(Service.class)) {
-                    Service service = clazz.getAnnotation(Service.class);
+                } else if (clazz.isAnnotationPresent(ASService.class)) {
+                    ASService service = clazz.getAnnotation(ASService.class);
                     String beanName = service.value();
                     if ("".equals(beanName)) {
                         beanName = clazz.getName();
@@ -113,13 +113,13 @@ public class DispatcherServlet extends HttpServlet {
                     continue;
                 }
                 Class<?> clazz = object.getClass();
-                if (clazz.isAnnotationPresent(Controller.class)) {
+                if (clazz.isAnnotationPresent(ASController.class)) {
                     Field[] fields = clazz.getDeclaredFields();
                     for (Field field : fields) {
-                        if (!field.isAnnotationPresent(Autowired.class)) {
+                        if (!field.isAnnotationPresent(ASAutowired.class)) {
                             continue;
                         }
-                        Autowired autowired = field.getAnnotation(Autowired.class);
+                        ASAutowired autowired = field.getAnnotation(ASAutowired.class);
                         String beanName = autowired.value();
                         if ("".equals(beanName)) {
                             beanName = field.getType().getName();

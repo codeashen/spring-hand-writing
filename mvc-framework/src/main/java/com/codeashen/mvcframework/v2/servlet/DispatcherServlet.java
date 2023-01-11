@@ -80,8 +80,8 @@ public class DispatcherServlet extends HttpServlet {
                 Annotation[][] pa = method.getParameterAnnotations();
                 for (int j = 0; j < pa.length; j++) {
                     for (Annotation a : pa[i]) {
-                        if (a instanceof RequestParam) {
-                            String paramName = ((RequestParam) a).value();
+                        if (a instanceof ASRequestParam) {
+                            String paramName = ((ASRequestParam) a).value();
                             if (!"".equals(paramName.trim())) {
                                 String value = Arrays.toString(parameterMap.get(paramName))
                                         .replaceAll("\\[|\\]", "")
@@ -173,13 +173,13 @@ public class DispatcherServlet extends HttpServlet {
                 Class<?> clazz = Class.forName(clazzName);
 
                 // 实例化添加了相关注解的类，处理 @Controller 和 @Service
-                if (clazz.isAnnotationPresent(Controller.class)) {
+                if (clazz.isAnnotationPresent(ASController.class)) {
                     // Spring 默认类名首字母小写
                     String beanName = toLowerFirstCase(clazz.getSimpleName());
                     ioc.put(beanName, clazz.newInstance());
-                } else if (clazz.isAnnotationPresent(Service.class)) {
+                } else if (clazz.isAnnotationPresent(ASService.class)) {
                     // 获取自定义 beanName
-                    Service service = clazz.getAnnotation(Service.class);
+                    ASService service = clazz.getAnnotation(ASService.class);
                     String beanName = service.value();
                     // 未定义 beanName 就使用类名首字母小写
                     if ("".equals(beanName.trim())) {
@@ -216,10 +216,10 @@ public class DispatcherServlet extends HttpServlet {
             // 获取所有字段
             Field[] fields = entry.getValue().getClass().getDeclaredFields();
             for (Field field : fields) {
-                if (!field.isAnnotationPresent(Autowired.class)) {
+                if (!field.isAnnotationPresent(ASAutowired.class)) {
                     continue;
                 }
-                Autowired autowired = field.getAnnotation(Autowired.class);
+                ASAutowired autowired = field.getAnnotation(ASAutowired.class);
 
                 // 如果用户没有定义 beanName，默认就根据类型注入
                 String beanName = autowired.value().trim();
@@ -250,24 +250,24 @@ public class DispatcherServlet extends HttpServlet {
 
         for (Map.Entry<String, Object> entry : ioc.entrySet()) {
             Class<?> clazz = entry.getValue().getClass();
-            if (!clazz.isAnnotationPresent(Controller.class)) {
+            if (!clazz.isAnnotationPresent(ASController.class)) {
                 continue;
             }
 
             // 保存写在类上的 RequestMapping 注解值
             String baseUrl = "";
-            if (clazz.isAnnotationPresent(RequestMapping.class)) {
-                RequestMapping requestMapping = clazz.getAnnotation(RequestMapping.class);
+            if (clazz.isAnnotationPresent(ASRequestMapping.class)) {
+                ASRequestMapping requestMapping = clazz.getAnnotation(ASRequestMapping.class);
                 baseUrl = requestMapping.value();
             }
 
             // 默认获取所有 public 类型的方法
             Method[] methods = clazz.getMethods();
             for (Method method : methods) {
-                if (!method.isAnnotationPresent(RequestMapping.class)) {
+                if (!method.isAnnotationPresent(ASRequestMapping.class)) {
                     continue;
                 }
-                RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+                ASRequestMapping requestMapping = method.getAnnotation(ASRequestMapping.class);
                 String url = ("/" + baseUrl + "/" + requestMapping.value())
                         .replaceAll("/+", "/");
                 handlerMapping.put(url, method);
